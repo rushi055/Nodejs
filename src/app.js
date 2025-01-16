@@ -1,28 +1,36 @@
 const express = require("express");
-
+const connectDb = require("./config/database");
+const User = require("./models/user");
 const app = express();
-const { AdminAuth , UserAuth } = require("./Middlewares/auth");
 
-// Middleware to handle authentication for all GET, POST, etc. requests
-app.use("/admin",AdminAuth);
+app.post("/signup", async (req, res) => {
+  try {
+    // Create a new user
+    const user = new User({
+      firstname: "Rushikesh",
+      lastName: "Chaudhari",
+      email: "rushi@gmail.com",
+      password: "rushi123",
+      age: 21,
+    });
 
-app.post("/user/login", (req, res) => {
-  console.log("User Log In Successfully");
-  res.send("login is Successful");
+    // Save the user to the database
+    await user.save();
+
+    res.status(201).send("User created successfully");
+  } catch (err) {
+    console.error("Error creating user:", err.message);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
-app.get("/user/getData",UserAuth, (req, res) => {
-  res.send("User Data Sent");
-});
-
-app.get("/admin/getAllData", (req, res) => {
-  res.send("Data Sent");
-});
-
-app.get("/admin/deleteUser", (req, res) => {
-  res.send("Deleted a user");
-});
-
-app.listen(3000, () => {
-  console.log("Server is successfully listening on port 3000");
-});
+connectDb()
+  .then(() => {
+    console.log("Database connected");
+    app.listen(3000, () => {
+      console.log("Server is successfully listening on port 3000");
+    });
+  })
+  .catch((err) => {
+    console.error("Error connecting to database");
+  });
