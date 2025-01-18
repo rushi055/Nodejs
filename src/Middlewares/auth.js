@@ -10,6 +10,8 @@ const AdminAuth = (req, res, next) => {
     next();
   }
 };
+
+
 const UserAuth = (req, res, next) => {
     console.log("User Auth is being checked");
   
