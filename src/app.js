@@ -29,9 +29,7 @@ app.get("/user", async (req, res) => {
     } else {
       res.send(user);
     }
-  } 
-  
-  catch (err) {
+  } catch (err) {
     res.status(500).send("Something went wrong");
   }
 });
@@ -55,14 +53,27 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const data = req.body;
   try {
-    await User.findByIdAndUpdate({_id: userId}, data);
+    // Check if the fields are allowed to date
+    const ALLOWED_FIELDS = ["firstname","photoURL", "lastName", "password", "age"];
+    const isUpdateAllowed = Object.keys(data).every((field) =>
+      ALLOWED_FIELDS.includes(field)
+    );
+    if(!isUpdateAllowed){
+     throw new Error("Invalid fields to update");
+    }
+
+    // Update the user
+    await User.findByIdAndUpdate({ _id: userId }, data, {
+      runValidators: true, // to run the validators on the updated data
+      returnDocument: "after",
+    });
     res.send("User updated successfully");
   } catch (err) {
-    res.status(500).send("Something went wrong");
+    res.status(500).send("Something went wrong :" + err.message);
   }
 });
 
