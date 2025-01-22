@@ -2,12 +2,21 @@ const express = require("express");
 const connectDb = require("./config/database");
 const User = require("./models/user");
 const app = express();
-
+const { validateSignupData } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
+  // Validate the user data
+  validateSignupData(req);
+
+  // encrypt the password
+  const { firstname, lastname, email, password } = req.body;
+  const passwordHash = await bcrypt.hashSync(password, 10);
+  console.log(passwordHash);
+
   //console.log(req.body);
-  const user = new User(req.body);
+  const user = new User({ firstname, lastname, email, password: passwordHash });
   try {
     // Save the user to the database
     await user.save();
@@ -15,6 +24,27 @@ app.post("/signup", async (req, res) => {
     res.status(201).send("User created successfully");
   } catch (err) {
     console.error("Error creating user:", err.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/login", async (req, res)  => {
+  try {
+    const { email, password } = req.body;
+
+    // Find the user with the email
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error("Email ID not found");
+    }
+    const isPasswordvalid = await bcrypt.compare(password, user.password);
+    if (isPasswordvalid) {
+      res.send("User logged in successfully");
+    } else {
+      throw new Error("Password is incorrect");
+    }
+  } catch (err) {
+    console.error("Error logging in user:", err.message);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -58,12 +88,18 @@ app.patch("/user/:userId", async (req, res) => {
   const data = req.body;
   try {
     // Check if the fields are allowed to date
-    const ALLOWED_FIELDS = ["firstname","photoURL", "lastName", "password", "age"];
+    const ALLOWED_FIELDS = [
+      "firstname",
+      "photoURL",
+      "lastName",
+      "password",
+      "age",
+    ];
     const isUpdateAllowed = Object.keys(data).every((field) =>
       ALLOWED_FIELDS.includes(field)
     );
-    if(!isUpdateAllowed){
-     throw new Error("Invalid fields to update");
+    if (!isUpdateAllowed) {
+      throw new Error("Invalid fields to update");
     }
 
     // Update the user
