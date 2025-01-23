@@ -12,9 +12,6 @@ const validateSignupData=(req)=>{
     else if(!validator.isStrongPassword(password)){
         return {error: "Password is not strong enough"};
     }
-    else{
-        return true;
-    }
 };
 
 module.exports = {validateSignupData};

@@ -4,7 +4,10 @@ const User = require("./models/user");
 const app = express();
 const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   // Validate the user data
@@ -35,18 +38,43 @@ app.post("/login", async (req, res)  => {
     // Find the user with the email
     const user = await User.findOne({ email: email });
     if (!user) {
-      throw new Error("Email ID not found");
+      throw new Error("Invalid Credentials");
     }
     const isPasswordvalid = await bcrypt.compare(password, user.password);
     if (isPasswordvalid) {
+
+      //Create JWT token
+      const token = await jwt.sign({_id: user._id},"mysecretkey"); 
+
+      //Add the token to the cookie and send the response back to the user
+      res.cookie("token", token);
       res.send("User logged in successfully");
     } else {
-      throw new Error("Password is incorrect");
+      throw new Error("Invalid Credentials");
     }
   } catch (err) {
     console.error("Error logging in user:", err.message);
     res.status(500).send("Internal Server Error");
   }
+});
+
+app.get("/Profile", async (req, res) => {
+
+  const cookie = req.cookies;
+  const { token } = cookie;
+
+  if(!token){
+    throw new Error("User does not exist");
+  }
+  //Verify the token
+  const decoded = jwt.verify(token, "mysecretkey");
+  const { _id } = decoded;
+  console.log("Logged In User is :"+_id);
+  
+
+  const user = await User.findById(_id);
+  //console.log(cookie);
+  res.send(user);
 });
 
 app.get("/user", async (req, res) => {
