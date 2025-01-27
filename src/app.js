@@ -6,6 +6,7 @@ const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { UserAuth } = require("./Middlewares/auth");
 app.use(express.json());
 app.use(cookieParser());
 
@@ -31,7 +32,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res)  => {
+app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -42,9 +43,10 @@ app.post("/login", async (req, res)  => {
     }
     const isPasswordvalid = await bcrypt.compare(password, user.password);
     if (isPasswordvalid) {
-
       //Create JWT token
-      const token = await jwt.sign({_id: user._id},"mysecretkey"); 
+      const token = await jwt.sign({ _id: user._id }, "mysecretkey", {
+        expiresIn: "1h",
+      });
 
       //Add the token to the cookie and send the response back to the user
       res.cookie("token", token);
@@ -58,86 +60,24 @@ app.post("/login", async (req, res)  => {
   }
 });
 
-app.get("/Profile", async (req, res) => {
-
-  const cookie = req.cookies;
-  const { token } = cookie;
-
-  if(!token){
-    throw new Error("User does not exist");
-  }
-  //Verify the token
-  const decoded = jwt.verify(token, "mysecretkey");
-  const { _id } = decoded;
-  console.log("Logged In User is :"+_id);
-  
-
-  const user = await User.findById(_id);
-  //console.log(cookie);
-  res.send(user);
-});
-
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.email;
+//only way to get jwt token is by login(cookies will be generated) and then by profile , if user try to fetch profile without login that is without cookies then it will give error
+app.get("/Profile", UserAuth, async (req, res) => {
   try {
-    const user = await User.find({ email: userEmail });
+    const user = req.user;
 
-    if (user.length === 0) {
-      res.status(404).send("User not found");
-    } else {
-      res.send(user);
-    }
+    res.send(user);
   } catch (err) {
-    res.status(500).send("Something went wrong");
+    res.status(401).send("Error" + err.message);
   }
 });
 
-app.get("/feed", async (req, res) => {
+app.post("/sendConnectionrequest", UserAuth, async (req, res) => {
   try {
-    const users = await User.find();
-    res.send(users);
-  } catch (err) {
-    res.status(500).send("Something went wrong");
-  }
-});
+    const user = req.user;
 
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
-  try {
-    await User.findByIdAndDelete(userId);
-    res.send("User deleted successfully");
+    res.send(user.firstname + " " + "has sent a connection request");
   } catch (err) {
-    res.status(500).send("Something went wrong");
-  }
-});
-
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-  try {
-    // Check if the fields are allowed to date
-    const ALLOWED_FIELDS = [
-      "firstname",
-      "photoURL",
-      "lastName",
-      "password",
-      "age",
-    ];
-    const isUpdateAllowed = Object.keys(data).every((field) =>
-      ALLOWED_FIELDS.includes(field)
-    );
-    if (!isUpdateAllowed) {
-      throw new Error("Invalid fields to update");
-    }
-
-    // Update the user
-    await User.findByIdAndUpdate({ _id: userId }, data, {
-      runValidators: true, // to run the validators on the updated data
-      returnDocument: "after",
-    });
-    res.send("User updated successfully");
-  } catch (err) {
-    res.status(500).send("Something went wrong :" + err.message);
+    res.status(401).send("Error" + err.message);
   }
 });
 
