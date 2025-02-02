@@ -65,6 +65,22 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+userSchema.methods.getJwtToken = async function () {
+  const user = this; //this keywords does work in arrow function
+  const token = await jwt.sign({ _id: this._id }, "mysecretkey", {
+    expiresIn: "1h",
+  });
+  return token;
+};
+
+userSchema.method.validatePassword = async function (password) {
+  const user = this;
+  const passwordHash = user.password;
+  const isPasswordvalid = await bcrypt.compare(password, passwordHash);
+
+  return isPasswordvalid;
+};
+
 const UserModel = mongoose.model("User", userSchema);
 
 module.exports = UserModel;
