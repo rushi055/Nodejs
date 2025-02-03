@@ -12,7 +12,7 @@ const profileRouter = require("./routes/profile");
 
 app.use("/", authRouter);
 app.use("/request", requestRouter);
-app.use("/profile", profileRouter);
+app.use("/", profileRouter);
 
 
 

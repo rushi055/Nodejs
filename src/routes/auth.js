@@ -4,7 +4,6 @@ const authRouter = express.Router();
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
-
 authRouter.post("/signup", async (req, res) => {
   validateSignupData(req);
 
@@ -36,7 +35,7 @@ authRouter.post("/login", async (req, res) => {
       const token = await user.getJwtToken();
       //Add the token to the cookie and send the response back to the user
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 60000),
+        expires: new Date(Date.now() + 80000),
       });
       res.send("User logged in successfully");
     } else {
@@ -48,4 +47,11 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
+authRouter.post("/logout", async (req, res) => {
+  res
+    .cookie("token", null, {
+      expires: new Date(Date.now()),
+    });
+    res.send("User logged out successfully");
+});
 module.exports = authRouter;
