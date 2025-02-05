@@ -54,13 +54,17 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
+      enum :{
+        values: ["male", "female", "others"],
+        message: "{VALUE} is not supported",
+      }
       //only run validation when adding new user but when we add runvalidators:true in patch method then it will run validation for updation also
-      validate(value) {
-        if (!["male", "female", "others"].includes(value)) {
-          throw new Error("Invalid Gender entered");
-        }
-      },
-      default: "others",
+      // validate(value) {
+      //   if (!["male", "female", "others"].includes(value)) {
+      //     throw new Error("Invalid Gender entered");
+      //   }
+      // },
+      //default: "others",
     },
   },
   {

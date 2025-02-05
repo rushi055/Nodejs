@@ -12,7 +12,6 @@ authRouter.post("/signup", async (req, res) => {
   const user = new User({ firstname, lastname, email, password: passwordHash });
   try {
     await user.save();
-
     res.status(201).send("User created successfully");
   } catch (err) {
     console.error("Error creating user:", err.message);
@@ -23,19 +22,15 @@ authRouter.post("/signup", async (req, res) => {
 authRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Find the user with the email
     const user = await User.findOne({ email: email });
     if (!user) {
       throw new Error("Invalid Credentials");
     }
     const isPasswordvalid = await user.validatePassword(password);
     if (isPasswordvalid) {
-      //Create JWT token
       const token = await user.getJwtToken();
-      //Add the token to the cookie and send the response back to the user
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 80000),
+        expires: new Date(Date.now() + 3 * 60 * 60 * 1000),
       });
       res.send("User logged in successfully");
     } else {
@@ -48,10 +43,9 @@ authRouter.post("/login", async (req, res) => {
 });
 
 authRouter.post("/logout", async (req, res) => {
-  res
-    .cookie("token", null, {
-      expires: new Date(Date.now()),
-    });
-    res.send("User logged out successfully");
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+  });
+  res.send("User logged out successfully");
 });
 module.exports = authRouter;
