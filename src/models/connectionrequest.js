@@ -5,6 +5,7 @@ const connectionRequestSchema = new moongose.Schema(
   {
     fromUserId: {
       type: moongose.Schema.Types.ObjectId,
+      ref:  "User", //connecting two tables or linking two tables(reference to user table)
       required: true,
     },
     toUserId: {
