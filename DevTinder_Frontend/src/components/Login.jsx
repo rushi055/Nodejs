@@ -4,11 +4,13 @@ import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BaseURL } from "../utils/const";
+
 const Login = () => {
   const [email, setEmail] = useState("Rushikesh@gmail.com");
   const [password, setPassword] = useState("Rushi@123");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [error, setError] = useState("");
   const handleLogin = async () => {
     try {
       const res = await axios.post(
@@ -23,7 +25,8 @@ const Login = () => {
 
       return navigate("/");
     } catch (err) {
-      console.log(err);
+      setError(err?.response?.data || "Invalid Credentials");
+      console.error("Error logging in:", err);
     }
   };
   return (
@@ -55,6 +58,7 @@ const Login = () => {
               />
             </fieldset>
           </div>
+          <p className="text-sm text-gray-500">{error}</p>
           <div className="card-actions justify-center">
             <button className="btn btn-primary" onClick={handleLogin}>
               Login
