@@ -16,4 +16,6 @@ Whenever you're making API calls so pass withCredentiats: true   if we do not do
 Install Redux Toolkit
 make store , slices and then add to login.jsx  -----   we use redux extension to see the responce
 we use dispatch(action)
-adding feature of when logged in then user's profile photo must see in navbar so for that we subscript to navbar -->
+adding feature of when logged in then user's profile photo must see in navbar so for that we subscript to navbar
+
+ -->

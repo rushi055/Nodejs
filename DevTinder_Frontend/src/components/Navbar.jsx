@@ -5,6 +5,7 @@ import { BaseURL } from "../utils/const";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { removeUser } from "../utils/userSlice";
+
 function Navbar() {
   const user = useSelector((store) => store.user);
   const navigator = useNavigate();
@@ -57,9 +58,9 @@ function Navbar() {
                   <span className="badge">New</span>
                 </Link>
               </li>
-              <li>
-                <a>Settings</a>
-              </li>
+              {/* <li>
+                <Link to="/connections">Connections</Link>
+              </li> */}
               <li>
                 <a onClick={handleLogOut}>Logout</a>
               </li>
