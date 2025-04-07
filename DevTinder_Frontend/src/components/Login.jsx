@@ -1,16 +1,20 @@
-import axios from "axios";
 import { useState } from "react";
+import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BaseURL } from "../utils/const";
 
 const Login = () => {
-  const [email, setEmail] = useState("Rushikesh@gmail.com");
-  const [password, setPassword] = useState("Rushi@123");
+  const [email, setemail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstname, setfirstname] = useState("");
+  const [lastname, setlastname] = useState("");
+  const [isLoginForm, setIsLoginForm] = useState(false);
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [error, setError] = useState("");
+
   const handleLogin = async () => {
     try {
       const res = await axios.post(
@@ -22,52 +26,104 @@ const Login = () => {
         { withCredentials: true }
       );
       dispatch(addUser(res.data));
-
       return navigate("/");
     } catch (err) {
-      setError(err?.response?.data || "Invalid Credentials");
-      console.error("Error logging in:", err);
+      setError(err?.response?.data || "Something went wrong");
     }
   };
+
+  const handleSignUp = async () => {
+    try {
+      const res = await axios.post(
+        BaseURL + "/signup",
+        { firstname, lastname, email, password },
+        { withCredentials: true }
+      );
+      dispatch(addUser(res.data.data));
+      return navigate("/profile");
+    } catch (err) {
+      setError(err?.response?.data || "Something went wrong");
+    }
+  };
+
   return (
-    <div className="flex justify-center my-10 ">
-      <div className="card card-border bg-base-300 w-96">
+    <div className="flex justify-center my-10">
+      <div className="card bg-base-300 w-96 shadow-xl">
         <div className="card-body">
-          <h2 className="card-title justify-center">Login </h2>
+          <h2 className="card-title justify-center">
+            {isLoginForm ? "Login" : "Sign Up"}
+          </h2>
           <div>
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Email ID</legend>
+            {!isLoginForm && (
+              <>
+                <label className="form-control w-full max-w-xs my-5">
+                  <div className="label">
+                    <span className="label-text">First Name</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={firstname}
+                    className="input input-bordered w-full max-w-xs"
+                    onChange={(e) => setfirstname(e.target.value)}
+                  />
+                </label>
+                <label className="form-control w-full max-w-xs my-2">
+                  <div className="label">
+                    <span className="label-text">Last Name</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={lastname}
+                    className="input input-bordered w-full max-w-xs"
+                    onChange={(e) => setlastname(e.target.value)}
+                  />
+                </label>
+              </>
+            )}
+            <label className="form-control w-full max-w-xs my-2">
+              <div className="label">
+                <span className="label-text">Email ID:</span>
+              </div>
               <input
                 type="text"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="Type here"
+                className="input input-bordered w-full max-w-xs"
+                onChange={(e) => setemail(e.target.value)}
               />
-            </fieldset>
-          </div>
-          <div>
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Password</legend>
+            </label>
+            <label className="form-control w-full max-w-xs my-2">
+              <div className="label">
+                <span className="label-text">Password</span>
+              </div>
               <input
-                type="text"
+                type="password"
                 value={password}
+                className="input input-bordered w-full max-w-xs"
                 onChange={(e) => setPassword(e.target.value)}
-                className="input"
-                placeholder="Type here"
               />
-            </fieldset>
+            </label>
           </div>
-          <p className="text-sm text-red-500">{error}</p>
-          <div className="card-actions justify-center">
-            <button className="btn btn-primary" onClick={handleLogin}>
-              Login
+          <p className="text-red-500">{error}</p>
+          <div className="card-actions justify-center m-2">
+            <button
+              className="btn btn-primary"
+              onClick={isLoginForm ? handleLogin : handleSignUp}
+            >
+              {isLoginForm ? "Login" : "Sign Up"}
             </button>
           </div>
+
+          <p
+            className="m-auto cursor-pointer py-2"
+            onClick={() => setIsLoginForm((value) => !value)}
+          >
+            {isLoginForm
+              ? "New User? Signup Here"
+              : "Existing User? Login Here"}
+          </p>
         </div>
       </div>
     </div>
   );
 };
-
 export default Login;

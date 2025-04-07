@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import { BaseURL } from "../utils/const";
 import { useDispatch, useSelector } from "react-redux";
 import { addRequests, removeRequest } from "../utils/requestSlice";
 import { useEffect } from "react";
@@ -11,7 +11,7 @@ const Requests = () => {
   const reviewRequest = async (status, _id) => {
     try {
       axios.post(
-        BASE_URL + "/request/review/" + status + "/" + _id,
+        BaseURL + "/request/review/" + status + "/" + _id,
         {},
         { withCredentials: true }
       );
@@ -23,7 +23,7 @@ const Requests = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get(BASE_URL + "/user/requests/received", {
+      const res = await axios.get(BaseURL + "/user/requests/received", {
         withCredentials: true,
       });
 
@@ -47,7 +47,7 @@ const Requests = () => {
       <h1 className="text-bold text-white text-3xl">Connection Requests</h1>
 
       {requests.map((request) => {
-        const { _id, firstName, lastName, photoUrl, age, gender, about } =
+        const { _id, firstname, photoURL, age, gender } =
           request.fromUserId;
 
         return (
@@ -59,15 +59,14 @@ const Requests = () => {
               <img
                 alt="photo"
                 className="w-20 h-20 rounded-full"
-                src={photoUrl}
+                src={photoURL}
               />
             </div>
             <div className="text-left mx-4 ">
               <h2 className="font-bold text-xl">
-                {firstName + " " + lastName}
+                {firstname }
               </h2>
               {age && gender && <p>{age + ", " + gender}</p>}
-              <p>{about}</p>
             </div>
             <div>
               <button
